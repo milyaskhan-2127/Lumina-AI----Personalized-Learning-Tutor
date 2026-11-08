@@ -1,2 +1,0 @@
-Probability Basics
-A probability ranges from 0 to 1. The expected value of a fair six-sided die is 3.5. Independent events satisfy P(A and B) = P(A)P(B). A Bernoulli trial has two possible outcomes.
