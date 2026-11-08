@@ -1,0 +1,2 @@
+Network Science
+A network is a set of nodes and edges. Degree counts the number of neighbors of a node. In a small-world network, most nodes are not direct neighbors but can be reached through a small number of hops. Network structure can influence diffusion between agents.

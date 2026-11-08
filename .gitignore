@@ -1,0 +1,13 @@
+API.txt
+api.txt
+.env
+.venv/
+node_modules/
+dist/
+backend/data/
+__pycache__/
+*.pyc
+output/
+*.log
+.pytest_cache/
+*.tsbuildinfo

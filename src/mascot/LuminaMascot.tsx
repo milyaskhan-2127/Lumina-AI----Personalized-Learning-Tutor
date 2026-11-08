@@ -1,0 +1,16 @@
+import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { useReducedMotion } from 'framer-motion';
+import { mascotNotice, useMascotStore } from './useMascotStore';
+const RobotModel=lazy(()=>import('./RobotModel'));
+class ModelBoundary extends Component<{children:ReactNode;fallback:ReactNode},{failed:boolean}>{state={failed:false};static getDerivedStateFromError(){return {failed:true}}render(){return this.state.failed?this.props.fallback:this.props.children}}
+function StaticRobot(){return <img className="mascot-static-image" src="/assets/lumina-robot.png" alt="Lumina robot tutor illustration in lightweight mode" width="1024" height="1536"/>}
+export default function LuminaMascot({compact=false,onBook=()=>{}}:{compact?:boolean;onBook?:()=>void}){
+ const enabled=useMascotStore(s=>s.enabled3d),state=useMascotStore(s=>s.state),reduced=useReducedMotion(),[visible,setVisible]=useState(true),[webgl,setWebgl]=useState(true),[documentVisible,setDocumentVisible]=useState(!document.hidden),ref=useRef<HTMLDivElement>(null);
+ useEffect(()=>{try{const test=document.createElement('canvas');const gl=test.getContext('webgl2')||test.getContext('webgl');if(!gl){setWebgl(false);return}gl.getExtension('WEBGL_lose_context')?.loseContext()}catch{setWebgl(false)}},[]);
+ useEffect(()=>{const observer=new IntersectionObserver(([entry])=>setVisible(entry.isIntersecting),{threshold:.03});if(ref.current)observer.observe(ref.current);const visibility=()=>setDocumentVisible(!document.hidden);document.addEventListener('visibilitychange',visibility);return()=>{observer.disconnect();document.removeEventListener('visibilitychange',visibility)}},[]);
+ const fallback=<StaticRobot/>;
+ return <div className={'real-mascot '+(compact?'real-mascot-compact':'')} ref={ref} data-robot-state={state} role="img" aria-label={`Interactive Lumina robot. Current state: ${state}. ${enabled&&webgl?'Live 3D model.':'Lightweight illustration fallback.'}`} onPointerEnter={e=>{if(e.pointerType==='mouse')useMascotStore.getState().setActivity('hover',{state:'hover',message:'A little curiosity looks good on you.'})}} onPointerLeave={()=>useMascotStore.getState().setActivity('hover',null)} onDoubleClick={()=>{useMascotStore.getState().react();mascotNotice('greeting','You found my happy dance! What shall we learn next?',1600)}}>
+ {enabled&&webgl?<ModelBoundary fallback={fallback}><Suspense fallback={fallback}><Canvas camera={{position:[0,.4,5.8],fov:compact?43:40}} dpr={[1,1.5]} gl={{alpha:true,antialias:true,powerPreference:'low-power'}} frameloop={visible&&documentVisible&&!reduced?'always':'demand'} onCreated={({gl})=>{gl.setClearAlpha(0);gl.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();setWebgl(false)},{once:true})}}><ambientLight intensity={1.5}/><hemisphereLight args={['#d9f5ff','#8b96d4',1.5]}/><directionalLight position={[-3,4,5]} intensity={3.4} color="#ecfaff"/><directionalLight position={[3,1,-1]} intensity={3} color="#30cfff"/><pointLight position={[-2,-1,2]} color="#a4adff" intensity={8}/><RobotModel reduced={!!reduced} onBook={onBook}/></Canvas></Suspense></ModelBoundary>:fallback}
+ </div>
+}
