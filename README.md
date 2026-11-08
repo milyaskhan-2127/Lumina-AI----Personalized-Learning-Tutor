@@ -2,7 +2,7 @@
 
 A React and FastAPI learning application with NVIDIA models, document RAG, persistent memory, real MCP tools and an interactive Three.js robot.
 
-[Repository](https://github.com/milyaskhan-2127/Lumina-AI----Personalized-Learning-Tutor) · [Word report](docs/report/Lumina_AI_Project_Report.docx)
+[Repository](https://github.com/milyaskhan-2127/Lumina-AI----Personalized-Learning-Tutor) · [Word report](Lumina_AI_Project_Report.docx)
 
 ## Run on Windows
 
