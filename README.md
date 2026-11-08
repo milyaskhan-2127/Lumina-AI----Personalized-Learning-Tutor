@@ -4,7 +4,7 @@ A local, single-student learning workspace for an Agent Based Modeling universit
 
 [GitHub repository](https://github.com/milyaskhan-2127/Lumina-AI----Personalized-Learning-Tutor) · [Word project report](docs/report/Lumina_AI_Project_Report.docx)
 
-The report includes feature explanations, technology roles, screenshots, the architecture diagram and a demonstration sequence. Final Word pagination review remains pending; see [verification notes](VERIFICATION.md).
+The report includes feature explanations, technology roles, four screenshots, the architecture diagram and a demonstration sequence. It is generated directly by `scripts/build_report.py` without opening Word, as requested. See [verification notes](VERIFICATION.md).
 
 ## Start on Windows
 

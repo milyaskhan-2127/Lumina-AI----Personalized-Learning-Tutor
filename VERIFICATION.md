@@ -34,7 +34,7 @@ The calculator was discovered and invoked through MCP and returned **20** for `s
 - Redesigned dashboard, expandable source evidence, real quiz celebration and MCP workflow screenshots: `docs/report-assets/`.
 - Sidebar checked at 1440 × 640: its middle section scrolls while the profile stays within the viewport.
 - A real one-minute focus session completed in the browser and saved 60 seconds in analytics.
-- Word report includes the repository link, screenshots and architecture. Its final Word pagination review was interrupted by the user and remains unverified.
+- Word report regenerated directly without opening Word, as requested. The DOCX archive, five embedded images, two tables, repository hyperlink and feature/workflow content passed structural checks. Final pagination has not been visually reviewed.
 
 ## Reproduce
 
