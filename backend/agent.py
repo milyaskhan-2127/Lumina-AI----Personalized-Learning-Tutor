@@ -38,7 +38,9 @@ def document_request(question,history):
     words=set(re.findall(r'[a-z]+',question.lower()))
     generic={'please','summarize','summarise','summerize','summerise','summary','summery','shortly','briefly','brief','short','in','a','few','sentences','words','give','me','an','the','overview','of','this','these','selected','uploaded','attached','word','file','files','document','documents','pdf','notes','material','key','takeaways','main','points'}
     explain_document=bool(re.search(r'^(?:please )?(?:explain|describe|teach me|tell me about)\s+(?:this|these|the|selected|uploaded)\s+(?:word\s+)?(?:files?|documents?|pdfs?|notes|material)\b',question,re.I))
-    return question,explain_document or (summary and (document or words<=generic))
+    teaching_words=generic|{'explain','explanation','teach','learn','help','understand','understanding','study','concept','concepts','topic','topics','lesson','lessons','something','anything','new','difficult','simply','simple','easily','easy','step','by','step','my','some','about','important','interesting','from','using'}
+    generic_lesson=bool(re.search(r'\b(?:explain|teach|learn|understand|lesson)\b',question,re.I)) and words<=teaching_words
+    return question,generic_lesson or explain_document or (summary and (document or words<=generic))
 
 async def plan(s):
     await emit(s,'plan','Selecting a learning route.','running')
