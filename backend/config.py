@@ -1,4 +1,5 @@
 import os
+from ipaddress import IPv4Address, AddressValueError
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -20,3 +21,14 @@ BASE = os.getenv('NVIDIA_BASE_URL', 'https://integrate.api.nvidia.com/v1').rstri
 MODEL = os.getenv('NVIDIA_MODEL', 'nvidia/nemotron-3.5-bolt-e4b')
 EMBED_PROVIDER = os.getenv('EMBEDDING_PROVIDER', 'nvidia')
 EMBED_MODEL = os.getenv('EMBEDDING_MODEL', 'nvidia/nemotron-3.5-embed-1b')
+
+# start.ps1 supplies this computer's active LAN addresses. Accept exact origins,
+# never an arbitrary website or a wildcard, while the API stays on loopback.
+FRONTEND_ORIGINS = {'http://localhost:5173','http://127.0.0.1:5173'}
+for host in os.getenv('LUMINA_LAN_HOSTS','').split(','):
+    try:
+        address=IPv4Address(host.strip())
+    except AddressValueError:
+        continue
+    if address.is_private and not (address.is_loopback or address.is_link_local or address.is_unspecified):
+        FRONTEND_ORIGINS.add(f'http://{address}:5173')

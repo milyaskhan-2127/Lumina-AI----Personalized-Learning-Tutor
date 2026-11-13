@@ -9,7 +9,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 from . import store, rag
-from .config import DATA, KEY, MODEL, EMBED_MODEL
+from .config import DATA, KEY, MODEL, EMBED_MODEL, FRONTEND_ORIGINS
 from .llm import AIError, completion, parse_json
 from .mcp_client import invoke
 from .agent import graph
@@ -22,13 +22,13 @@ async def lifespan(app):
 
 app=FastAPI(title='Lumina AI',lifespan=lifespan)
 app.add_middleware(TrustedHostMiddleware,allowed_hosts=['localhost','127.0.0.1','testserver'])
-app.add_middleware(CORSMiddleware,allow_origins=['http://localhost:5173','http://127.0.0.1:5173'],allow_methods=['GET','POST','PUT','DELETE'],allow_headers=['Content-Type'])
+app.add_middleware(CORSMiddleware,allow_origins=sorted(FRONTEND_ORIGINS),allow_methods=['GET','POST','PUT','DELETE'],allow_headers=['Content-Type'])
 
 @app.middleware('http')
 async def local_origin(request,call_next):
     origin=request.headers.get('origin')
-    if origin and origin not in ('http://localhost:5173','http://127.0.0.1:5173','http://localhost:8000','http://127.0.0.1:8000'):
-        return JSONResponse(status_code=403,content={'detail':'Only the local Lumina application may access this API.'})
+    if origin and origin not in FRONTEND_ORIGINS|{'http://localhost:8000','http://127.0.0.1:8000'}:
+        return JSONResponse(status_code=403,content={'detail':'Only the local Lumina application and configured LAN addresses may access this API.'})
     return await call_next(request)
 
 @app.exception_handler(AIError)

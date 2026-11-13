@@ -12,6 +12,10 @@ Requires Python 3.12+, Node.js 20.19+ or 22.12+, and NVIDIA API access.
 2. Copy `.env.example` to `.env` and enter your `NVIDIA_API_KEY`. Alternatively create `API.txt` containing the key.
 3. Run `start.cmd` and open http://localhost:5173. The backend runs at http://localhost:8000.
 
+For a phone on the same Wi-Fi, use the `Phone / same Wi-Fi` URL printed by `start.cmd`. The launcher detects the current system IP each time. Only frontend port 5173 needs LAN access; FastAPI stays on 127.0.0.1 and receives requests through the frontend proxy. Windows Firewall must allow Node.js TCP port 5173 from your local subnet. Devices using this LAN URL share the same student workspace.
+
+Keep the launcher open. Stop with Ctrl+C, then Y and Enter if CMD asks `Terminate batch job`. Starting a second copy reports occupied ports; startup errors remain visible until you press a key.
+
 The submission contains application source, required assets, dependency manifests, launchers and the Word report. Installations, credentials, uploaded documents and local learning data are not included. The application creates `backend/data/` when first started.
 
 ## Features and architecture
