@@ -28,6 +28,8 @@ def init():
         CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, run_id TEXT, node TEXT, status TEXT, detail TEXT, created TEXT);
         CREATE TABLE IF NOT EXISTS focus_sessions (id TEXT PRIMARY KEY, topic TEXT, planned_seconds INTEGER, status TEXT, active_seconds REAL, last_started TEXT, created TEXT, completed_at TEXT);
         ''')
+        if 'sources' not in {row['name'] for row in c.execute('PRAGMA table_info(quizzes)')}:
+            c.execute("ALTER TABLE quizzes ADD COLUMN sources TEXT NOT NULL DEFAULT '[]'")
 
 def query(sql, args=()):
     with db() as c:

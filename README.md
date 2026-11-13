@@ -18,7 +18,7 @@ The submission contains application source, required assets, dependency manifest
 
 - Personalized streaming tutor with saved conversations, learning preferences and language settings.
 - PDF, DOCX, PPTX and TXT ingestion, semantic retrieval and source references.
-- MCP-generated quizzes, grading, persistent progress and learning analytics.
+- MCP-generated quizzes from checked documents or a general topic, with saved source references, grading, persistent progress and learning analytics. Leave Topic blank in document mode to cover the selected material.
 - Interactive 3D robot with whole-viewport cursor tracking, task animations and quiz celebrations.
 - Floating companion, document lessons, focus timer and optional browser speech controls.
 

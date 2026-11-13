@@ -110,3 +110,39 @@ async def retrieve(question, documents):
         if score>=float(os.getenv('RETRIEVAL_MIN_SCORE','0.35')):
             sources.append(dict(**meta,text=text,score=round(score,3),label=f'S{len(sources)+1}'))
     return sources[:6]
+
+async def document_overview(documents):
+    """Read representative indexed excerpts when the user requests a whole document.
+
+    An overview has no topic query to score against. Preserve the document filter,
+    source locations and coverage instead of rejecting it on cosine similarity.
+    """
+    if not documents:
+        return []
+    rows=await asyncio.to_thread(collection().get,where={'document_id':{'$in':documents}},include=['documents','metadatas'])
+    groups={ident:[] for ident in documents}
+    for ident,text,meta in zip(rows['ids'],rows['documents'],rows['metadatas']):
+        groups[meta['document_id']].append((int(ident.rsplit(':',1)[-1]),text,meta))
+    limit=max(6,len(groups))
+    sampled=[]
+    for chunks in groups.values():
+        chunks.sort(key=lambda chunk:chunk[0])
+        count=min(len(chunks),limit)
+        indices=sorted({round(i*(len(chunks)-1)/max(1,count-1)) for i in range(count)})
+        sampled.append([chunks[i] for i in indices])
+    sources=[]
+    for offset in range(limit):
+        for chunks in sampled:
+            if offset<len(chunks):
+                _,text,meta=chunks[offset]
+                sources.append(dict(**meta,text=text,label=f'S{len(sources)+1}',retrieval='document-overview'))
+                if len(sources)==limit:
+                    return sources
+    return sources
+
+def quiz_uses_overview(topic):
+    import re
+    return not topic.strip() or bool(re.fullmatch(r'(?:quiz|practice|test|mcqs?)\s*\d*|(?:the |this |selected |uploaded )?(?:documents?|files?|notes|material)',topic.strip(),re.I))
+
+def source_context(sources):
+    return '\n\n'.join(f'[{s["label"]}] {s["title"]} - {s["location"]} {s["page"]}\n{s["text"]}' for s in sources)

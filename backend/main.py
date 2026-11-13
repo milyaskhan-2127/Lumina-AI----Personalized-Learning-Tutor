@@ -195,17 +195,38 @@ async def delete_document(ident: str):
     return {'deleted':True}
 
 class QuizRequest(BaseModel):
-    topic: str=Field(min_length=2,max_length=300)
+    topic: str=Field(default='',max_length=300)
     difficulty: str=Field(default='medium',pattern='^(easy|medium|hard)$')
     count: int=Field(default=5,ge=1,le=10)
     kind: str=Field(default='mcq',pattern='^(mcq|short)$')
+    document_ids: list[str]=Field(default_factory=list,max_length=20)
 
 @app.post('/api/quizzes')
 async def create_quiz(body: QuizRequest):
     run=store.uid()
+    args=body.model_dump(exclude={'document_ids'})
+    args['topic']=body.topic.strip()
+    if body.document_ids:
+        documents=[]
+        for ident in dict.fromkeys(body.document_ids):
+            rows=store.query('SELECT id,title FROM documents WHERE id=?',(ident,))
+            if not rows:
+                raise HTTPException(404,'A selected quiz document no longer exists. Choose another document.')
+            documents.append(rows[0])
+        overview=rag.quiz_uses_overview(body.topic)
+        store.event(run,'retrieval','Reading only selected documents for quiz questions.','running')
+        sources=await rag.document_overview(body.document_ids) if overview else await rag.retrieve(body.topic,body.document_ids)
+        if not sources:
+            raise HTTPException(422,'No matching content was found in the selected documents. Leave Topic blank to quiz the whole document, or choose a topic covered by it.')
+        args.update(context=rag.source_context(sources),sources=sources)
+        if not args['topic']:
+            args['topic']=', '.join(d['title'] for d in documents)[:300]
+        store.event(run,'retrieval',f'Quiz grounded in {len(sources)} excerpts from selected documents.')
+    elif len(args['topic'])<2:
+        raise HTTPException(422,'Enter a topic or select a document for your quiz.')
     store.event(run,'mcp','Starting stdio MCP quiz generation.','running')
     try:
-        r=await asyncio.wait_for(invoke('generate_quiz',body.model_dump()),150)
+        r=await asyncio.wait_for(invoke('generate_quiz',args),150)
     except Exception:
         store.event(run,'mcp','Quiz tool failed. Check NVIDIA configuration and retry.','error')
         raise HTTPException(502,'Quiz generation failed. Check NVIDIA access and retry.')
@@ -222,7 +243,8 @@ def get_quiz(ident: str):
     if not rows:
         raise HTTPException(404,'Quiz not found.')
     quiz=rows[0]
-    quiz['questions']=[{'question':q['question'],'options':q.get('options',[])} for q in json.loads(quiz['questions'])]
+    quiz['questions']=[{'question':q['question'],'options':q.get('options',[]),'source_labels':q.get('source_labels',[])} for q in json.loads(quiz['questions'])]
+    quiz['sources']=json.loads(quiz.get('sources') or '[]')
     existing=store.query('SELECT * FROM results WHERE quiz_id=?',(ident,))
     if existing:
         quiz['result']={**existing[0],'feedback':json.loads(existing[0]['feedback'])}
